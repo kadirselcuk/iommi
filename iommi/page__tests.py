@@ -25,10 +25,7 @@ def test_page_constructor():
     class MyPage(Page):
         h1 = html.h1()
 
-    my_page = MyPage(
-        parts__foo=html.div(_name='foo'),
-        parts__bar=html.div()
-    )
+    my_page = MyPage(parts__foo=html.div(_name='foo'), parts__bar=html.div())
 
     assert ['h1', 'foo', 'bar'] == list(declared_members(my_page).parts.keys())
     my_page = my_page.bind(request=None)
@@ -42,6 +39,7 @@ def test_page_constructor():
 def test_page_render():
     # Working around some weird issue with pypy3+django3.0
     from django.conf import settings
+
     settings.DEBUG = False
     # end workaround
 
@@ -113,3 +111,15 @@ def test_invalid_context_specified():
 def test_as_view():
     view = Page(parts__foo='##foo##').as_view()
     assert '##foo##' in view(req('get')).content.decode()
+
+
+def test_title_basic():
+    assert '<h1>Foo</h1>' == Page(title='foo').bind(request=req('get')).__html__()
+
+
+def test_title_empty():
+    assert '' in Page().bind(request=req('get')).__html__()
+
+
+def test_title_attr():
+    assert '<h1 class="foo">Foo</h1>' == Page(title='foo', h_tag__attrs__class__foo=True).bind(request=req('get')).__html__()

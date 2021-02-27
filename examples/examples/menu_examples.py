@@ -23,9 +23,7 @@ def menu_test(request):
         menu = Menu(
             sub_menu=dict(
                 root=MenuItem(url='/'),
-
                 menu_test=MenuItem(),
-
                 f_a_1=MenuItem(display_name='Example 1: echo submitted data', url="form_example_1/"),
                 f_a_2=MenuItem(display_name='Example 2: create a Foo', url="form_example_2/"),
                 f_a_3=MenuItem(display_name='Example 3: edit a Foo', url="form_example_3/"),
@@ -42,8 +40,7 @@ class IndexPage(ExamplesPage):
     header = html.h1('Form examples')
     description = html.p('Some examples of iommi Forms')
 
-    class Meta:
-        parts = example_links(examples)
+    examples = example_links(examples)
 
 
 urlpatterns = [

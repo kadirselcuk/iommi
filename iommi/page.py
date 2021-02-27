@@ -1,6 +1,7 @@
 from typing import (
     Dict,
     Type,
+    Union,
 )
 
 from tri_declarative import (
@@ -22,7 +23,11 @@ from iommi.base import (
     values,
 )
 from iommi.evaluate import evaluate_strict_container
-from iommi.fragment import Fragment
+from iommi.fragment import (
+    build_and_bind_h_tag,
+    Fragment,
+    Header,
+)
 from iommi.member import (
     bind_members,
     collect_members,
@@ -55,6 +60,9 @@ class Page(Part):
     title: str = EvaluatedRefinable()
     member_class: Type[Fragment] = Refinable()
     context = Refinable()  # context is evaluated, but in a special way so gets no EvaluatedRefinable type
+    h_tag: Union[
+        Fragment, str
+    ] = Refinable()  # h_tag is evaluated, but in a special way so gets no EvaluatedRefinable type
 
     class Meta:
         member_class = Fragment
@@ -63,16 +71,11 @@ class Page(Part):
     @dispatch(
         parts=EMPTY,
         context=EMPTY,
+        h_tag__call_target=Header,
     )
-    def __init__(
-        self,
-        *,
-        _parts_dict: Dict[str, PartType] = None,
-        parts: dict,
-        **kwargs
-    ):
+    def __init__(self, *, _parts_dict: Dict[str, PartType] = None, parts: dict, **kwargs):
         super(Page, self).__init__(**kwargs)
-        
+
         self.parts = {}  # This is just so that the repr can survive if it gets triggered before parts is set properly
 
         # First we have to up sample parts that aren't Part into Fragment
@@ -91,21 +94,23 @@ class Page(Part):
 
     def on_bind(self) -> None:
         bind_members(self, name='parts')
-        if self.context and self.iommi_parent() != None:
+        if self.context and self.iommi_parent() is not None:
             assert False, 'The context property is only valid on the root page'
+
+        build_and_bind_h_tag(self)
 
     def own_evaluate_parameters(self):
         return dict(page=self)
 
-    @dispatch(
-        render=lambda rendered: format_html('{}' * len(rendered), *values(rendered))
-    )
+    @dispatch(render=lambda rendered: format_html('{}' * len(rendered), *values(rendered)))
     def __html__(self, *, render=None):
         self.context = evaluate_strict_container(self.context or {}, **self.iommi_evaluate_parameters())
-        rendered = {
-            name: as_html(request=self.get_request(), part=part, context=self.iommi_evaluate_parameters())
+        request = self.get_request()
+        rendered = {'h_tag': as_html(request=request, part=self.h_tag, context=self.iommi_evaluate_parameters())}
+        rendered.update({
+            name: as_html(request=request, part=part, context=self.iommi_evaluate_parameters())
             for name, part in items(self.parts)
-        }
+        })
 
         return render(rendered)
 

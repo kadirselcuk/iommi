@@ -2,6 +2,7 @@ from functools import partial
 
 from iommi import (
     Action,
+    Fragment,
     html,
 )
 
@@ -11,6 +12,7 @@ def add_example(examples, description):
         f.description = description
         examples.append(f)
         return f
+
     return decorator
 
 
@@ -19,11 +21,11 @@ def example_adding_decorator(examples):
 
 
 def example_links(examples):
-    result = {}
+    children = {}
 
     for i, example in enumerate(examples):
         n = i + 1
-        result[f'example_{n}'] = html.p(
+        children[f'example_{n}'] = html.p(
             Action(
                 display_name=f'Example {n}: {example.description}',
                 attrs__href=f'example_{n}',
@@ -31,5 +33,4 @@ def example_links(examples):
             html.br(),
         )
 
-    return result
-
+    return Fragment(children=children)

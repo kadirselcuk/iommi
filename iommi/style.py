@@ -77,7 +77,9 @@ class Style:
     @dispatch(
         root=EMPTY,
     )
-    def __init__(self, *bases, base_template=None, content_block=None, assets=None, root=None, internal=False, **kwargs):
+    def __init__(
+        self, *bases, base_template=None, content_block=None, assets=None, root=None, internal=False, **kwargs
+    ):
         self.name = None
         self.internal = internal
 
@@ -97,9 +99,12 @@ class Style:
 
         if assets:
             from iommi.debug import iommi_debug_on
+
             if iommi_debug_on():
-                print("Warning: The preferred way to add top level assets config to a Style is via the root argument. "
-                      "I.e. assets__* becomes root__assets__*")
+                print(
+                    "Warning: The preferred way to add top level assets config to a Style is via the root argument. "
+                    "I.e. assets__* becomes root__assets__*"
+                )
             setdefaults_path(root, assets=assets)
 
         self.root = {k: v for k, v in items(Namespace(*(base.root for base in bases), root)) if v is not None}
@@ -133,7 +138,7 @@ _styles = {}
 
 
 def register_style(name, conf):
-    assert name not in _styles
+    assert name not in _styles, f'{name} is already registered'
     assert conf.name is None
     conf.name = name
     _styles[name] = conf
@@ -149,15 +154,18 @@ def get_style(name):
         return _styles[name]
     except KeyError:
         style_names = "\n    ".join(_styles.keys())
-        raise Exception(f'''No registered style {name}. Register a style with register_style(). 
+        raise Exception(
+            f'''No registered style {name}. Register a style with register_style().
 
 Available styles:
-    {style_names}''') from None
+    {style_names}'''
+        ) from None
 
 
 def reinvoke_new_defaults(obj: Any, additional_kwargs: Dict[str, Any]) -> Any:
-    assert is_reinvokable(obj), f'reinvoke_new_defaults() called on object with ' \
-                                f'missing @reinvokable constructor decorator: {obj!r}'
+    assert is_reinvokable(obj), (
+        f'reinvoke_new_defaults() called on object with ' f'missing @reinvokable constructor decorator: {obj!r}'
+    )
     additional_kwargs_namespace = Namespace(additional_kwargs)
 
     kwargs = Namespace(additional_kwargs_namespace)
@@ -179,10 +187,7 @@ def reinvoke_new_defaults(obj: Any, additional_kwargs: Dict[str, Any]) -> Any:
     try:
         call_target = kwargs.pop('call_target', None)
         if call_target is not None:
-            kwargs['call_target'] = Namespace(
-                call_target,
-                cls=type(obj)
-            )
+            kwargs['call_target'] = Namespace(call_target, cls=type(obj))
         else:
             kwargs['call_target'] = type(obj)
 
@@ -233,7 +238,7 @@ def validate_styles(*, additional_classes: List[Type] = None, default_classes=No
         from iommi.table import Paginator
         from iommi.menu import (
             MenuBase,
-            DebugMenu,
+            get_debug_menu,
         )
         from iommi.error import Errors
         from iommi.action import Actions
@@ -241,11 +246,12 @@ def validate_styles(*, additional_classes: List[Type] = None, default_classes=No
         from iommi.fragment import Container
         from iommi.fragment import Header
         from iommi.live_edit import LiveEditPage
+
         default_classes = [
             Action,
             Actions,
             Column,
-            DebugMenu,
+            get_debug_menu().__class__,
             Errors,
             Field,
             Form,
@@ -297,8 +303,7 @@ def validate_styles(*, additional_classes: List[Type] = None, default_classes=No
 
     if invalid_class_names or non_existent_shortcut_names:
         invalid_class_names_str = '\n'.join(
-            f'    Style: {style_name} - class: {cls_name}'
-            for style_name, cls_name in invalid_class_names
+            f'    Style: {style_name} - class: {cls_name}' for style_name, cls_name in invalid_class_names
         )
         if invalid_class_names_str:
             invalid_class_names_str = 'Invalid class names:\n' + invalid_class_names_str

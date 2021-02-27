@@ -1,6 +1,99 @@
 Changelog
 ---------
 
+2.8.8 (2021-02-23)
+~~~~~~~~~~~~~~~~~~
+
+* Automatically generating a Query from a model with a foreign key was broken in cases where the name field wasn't the same as name field of the parent model
+
+
+2.8.7 (2021-02-22)
+~~~~~~~~~~~~~~~~~~
+
+* Make it possible to pass a lambda to title of Page/Form/Table
+
+* Improved error when trying to register an already registered style
+
+
+2.8.6 (2021-02-19)
+~~~~~~~~~~~~~~~~~~
+
+* Revert to the old (pre 2.8.2) way of using `search_fields` to compose queries.
+
+  The new approach failed for cases when there was a custom `value_to_q` definition.
+  A proper fix needs to have a unified approach also when using `.pk` format.
+
+
+2.8.5 (2021-02-17)
+~~~~~~~~~~~~~~~~~~
+
+* Render title of `Page` objects. To turn off the rendering of the title pass `h_tag__include=False`.
+
+* Removed the register_search_fields warning, it was 90% annoying and 10% useful
+
+
+2.8.4 (2021-02-15)
+~~~~~~~~~~~~~~~~~~
+
+* Form: support passing instance as a lambda, even in combination with `auto__model`
+
+
+2.8.3 (2021-02-14)
+~~~~~~~~~~~~~~~~~~
+
+* Removed bad assert that prevented passing instance as a lambda for auto__model of Form
+
+* SQL trace was broken for postgres
+
+* query_from_indexes should automatically generate filters for foreign keys. This especially affected the admin.
+
+
+2.8.2 (2021-02-09)
+~~~~~~~~~~~~~~~~~~
+
+* Avoid using `search_fields` when composing queries from model filter values. Always using the `.pk` fallback approach is more stable when the search field values might not be unique. This will remove a bunch of warnings that weren't very helpful too.
+
+* Fixed crash when setting `query__include=False` on `Table`
+
+* `capitalize()` now handles safe strings properly. This will enable you to pass safe strings to `title` for example.
+
+* Translation of Yes/No
+
+* Fixed error message for `register_search_fields`
+
+* Updated to fontawesome 4.7
+
+* Renamed live edit asset to not conflict with the name 'custom' which might be fairly common
+
+* Nicer title in the admin for apps
+
+
+2.8.1 (2021-02-01)
+~~~~~~~~~~~~~~~~~~
+
+* Auto generated tables had "ID" as the column name for foreign keys, instead of the name of the remote model.
+
+* Profiler fixed: the bind and render of iommi objects that were handled by the middleware weren't profiled
+
+* Fixed live edit to work for views with URL arguments
+
+* Handle settings.BASE_DIR as Path objects
+
+* fix bulk__include = False on table
+
+* Make DebugMenu created on demand to avoid setting of breakpoints when debugging your own code
+
+* Models in admin are now in alphabetical order
+
+* `Field` is not a `Tag`, so you can render a `Form` as a div if you want.
+
+* The root menu item for the iommi admin was broken if you inherited from Admin
+
+* Force the live edit view to be bootstrap. This avoids the live edit feature looking a big broken for your own custom styles.
+
+* Minor bootstrap styling fix for non-editable fields
+
+
 2.8.0 (2021-01-13)
 ~~~~~~~~~~~~~~~~~~
 
